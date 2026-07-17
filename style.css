@@ -1,0 +1,60 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; background: #f6f4ef; color: #14141a; line-height: 1.5; }
+
+.topnav { display: flex; align-items: center; justify-content: space-between; padding: 20px 48px; background: #f6f4ef; border-bottom: 1px solid #e4e0d6; position: sticky; top: 0; z-index: 10; }
+.logo { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+nav { display: flex; gap: 4px; }
+.nav-btn { background: none; border: none; padding: 8px 14px; font-size: 14px; color: #55534d; cursor: pointer; border-radius: 20px; }
+.nav-btn:hover { background: #ece8dd; color: #14141a; }
+.nav-btn.active { background: #14141a; color: #f6f4ef; }
+.btn-outline { border: 1px solid #14141a; background: none; padding: 8px 18px; border-radius: 20px; font-size: 14px; cursor: pointer; }
+
+main { max-width: 980px; margin: 0 auto; padding: 60px 32px 100px; }
+.view { display: none; }
+.view.active { display: block; }
+
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8a877d; text-transform: uppercase; margin-bottom: 12px; }
+.hero-text h1 { font-size: 56px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 20px; }
+.hero-sub { font-size: 17px; color: #55534d; max-width: 520px; }
+h2 { font-size: 32px; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 8px; }
+.section-sub { color: #6f6c62; margin-bottom: 32px; font-size: 15px; }
+
+.divider { height: 1px; background: #e4e0d6; margin: 48px 0; }
+
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+.stat-card { background: #fff; border-radius: 12px; padding: 28px 22px; border: 1px solid #ece8dd; }
+.stat-number { font-size: 30px; font-weight: 700; color: #14141a; margin-bottom: 6px; }
+.stat-label { font-size: 13px; color: #8a877d; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.panel { background: #fff; border-radius: 12px; padding: 24px; border: 1px solid #ece8dd; }
+.panel h3 { font-size: 15px; margin-bottom: 14px; color: #14141a; }
+.panel ul { list-style: none; font-size: 14px; color: #3d3b35; display: flex; flex-direction: column; gap: 8px; }
+.muted { color: #a8a598; }
+
+.form-card { background: #fff; border: 1px solid #ece8dd; border-radius: 12px; padding: 28px; margin-bottom: 28px; display: flex; flex-direction: column; gap: 16px; max-width: 480px; }
+.form-card label { display: flex; flex-direction: column; font-size: 13px; color: #55534d; gap: 6px; }
+.form-card input, .form-card select, .form-card textarea { padding: 10px 12px; border: 1px solid #dedad0; border-radius: 8px; font-size: 14px; background: #fbfaf7; }
+.btn-primary { background: #14141a; color: #f6f4ef; border: none; padding: 12px 20px; border-radius: 24px; cursor: pointer; font-weight: 600; font-size: 14px; width: fit-content; }
+.btn-primary:hover { background: #2b2a30; }
+
+.list-area { display: flex; flex-direction: column; gap: 12px; }
+.list-item { background: #fff; border: 1px solid #ece8dd; border-radius: 10px; padding: 16px 20px; font-size: 14px; }
+.list-item strong { font-size: 15px; }
+.total-panel { font-size: 16px; font-weight: 700; max-width: 300px; margin-top: 16px; display: flex; justify-content: space-between; }
+
+.pitch-box { background: #fff; border: 1px solid #ece8dd; border-radius: 12px; padding: 28px; margin-top: 20px; white-space: pre-wrap; font-size: 14px; }
+
+.chat-box { background: #fff; border: 1px solid #ece8dd; border-radius: 12px; padding: 20px; height: 320px; overflow-y: auto; margin-bottom: 14px; }
+.chat-input-row { display: flex; gap: 10px; }
+.chat-input-row input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #dedad0; }
+
+footer { border-top: 1px solid #e4e0d6; padding: 40px 48px; }
+.footer-inner { max-width: 980px; margin: 0 auto; }
+.footer-inner p { color: #8a877d; font-size: 13px; margin-top: 6px; }
+
+@media (max-width: 720px) {
+  .stat-grid, .two-col { grid-template-columns: 1fr; }
+  .hero-text h1 { font-size: 38px; }
+  .topnav { flex-wrap: wrap; gap: 12px; padding: 16px 20px; }
+}
