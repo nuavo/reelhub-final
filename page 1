@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reel Hub — Plan. Finance. Prove it.</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topnav">
+  <div class="logo">Reel Hub</div>
+  <nav>
+    <button class="nav-btn active" data-view="dashboard">Home</button>
+    <button class="nav-btn" data-view="project">Project</button>
+    <button class="nav-btn" data-view="investors">Investors</button>
+    <button class="nav-btn" data-view="crew">Crew</button>
+    <button class="nav-btn" data-view="budget">Budget</button>
+    <button class="nav-btn" data-view="grants">Grants</button>
+    <button class="nav-btn" data-view="pitch">Pitch Portal</button>
+    <button class="nav-btn" data-view="chat">Chat</button>
+  </nav>
+  <button id="google-login" class="btn-outline">Sign in</button>
+</header>
+
+<main>
+
+  <section id="dashboard" class="view active">
+    <div class="hero">
+      <div class="hero-text">
+        <p class="eyebrow">THE PRODUCER WORKSPACE</p>
+        <h1>Plan your film.<br>Finance it.<br>Prove it's real.</h1>
+        <p class="hero-sub">One place to organize production, track every dollar raised, and show investors exactly what your crew can deliver — before you ask for a check.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="stat-budget">$0</div>
+        <div class="stat-label">Total budget</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-raised">$0</div>
+        <div class="stat-label">Amount raised</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-gap">$0</div>
+        <div class="stat-label">Financing gap</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="stat-investors">0</div>
+        <div class="stat-label">Committed investors</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h3>Upcoming grant deadlines</h3>
+        <ul id="grant-deadline-list"><li class="muted">None yet</li></ul>
+      </div>
+      <div class="panel">
+        <h3>Investors in talks</h3>
+        <ul id="investors-in-talks-list"><li class="muted">None yet</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="project" class="view">
+    <p class="eyebrow">PROJECT HUB</p>
+    <h2>The single source of truth for your film</h2>
+    <p class="section-sub">Every module below pulls from this record.</p>
+    <form id="project-form" class="form-card">
+      <label>Film title <input type="text" id="proj-title" placeholder="Signal Lost"></label>
+      <label>Logline <textarea id="proj-logline" placeholder="One-line premise..."></textarea></label>
+      <label>Runtime (min) <input type="number" id="proj-runtime" placeholder="12"></label>
+      <label>Stage
+        <select id="proj-stage">
+          <option>Development</option>
+          <option>Pre-Production</option>
+          <option>Production</option>
+          <option>Post-Production</option>
+          <option>Sync-Ready</option>
+        </select>
+      </label>
+      <label>Deadline <input type="date" id="proj-deadline"></label>
+      <button type="submit" class="btn-primary">Save project</button>
+    </form>
+    <div id="project-list" class="list-area"></div>
+  </section>
+
+  <section id="investors" class="view">
+    <p class="eyebrow">INVESTOR CRM</p>
+    <h2>Track every financier, start to finish</h2>
+    <p class="section-sub">From first contact to funded commitment.</p>
+    <form id="investor-form" class="form-card">
+      <label>Investor / financier name <input type="text" id="inv-name" placeholder="Jane Smith / Acme Capital"></label>
+      <label>Type
+        <select id="inv-type">
+          <option>Individual</option>
+          <option>Fund</option>
+          <option>Studio/Distributor</option>
+          <option>Crowdfunding</option>
+          <option>Family Office</option>
+        </select>
+      </label>
+      <label>Stage
+        <select id="inv-stage">
+          <option>Contacted</option>
+          <option>Pitched</option>
+          <option>In Talks</option>
+          <option>Committed</option>
+          <option>Funded</option>
+          <option>Passed</option>
+        </select>
+      </label>
+      <label>Amount ($) <input type="number" id="inv-amount" placeholder="50000"></label>
+      <label>Notes <textarea id="inv-notes" placeholder="Context, terms discussed..."></textarea></label>
+      <button type="submit" class="btn-primary">Add investor</button>
+    </form>
+    <div id="investor-list" class="list-area"></div>
+  </section>
+
+  <section id="crew" class="view">
+    <p class="eyebrow">CAST &amp; CREW</p>
+    <h2>Show investors who's actually making this</h2>
+    <p class="section-sub">A credible crew is proof, not decoration.</p>
+    <form id="crew-form" class="form-card">
+      <label>Name <input type="text" id="crew-name" placeholder="Jordan Lee"></label>
+      <label>Role <input type="text" id="crew-role" placeholder="Director of Photography"></label>
+      <label>Notable credits <input type="text" id="crew-credits" placeholder="Sundance short, Netflix doc..."></label>
+      <label>Contact <input type="text" id="crew-contact" placeholder="Email or phone"></label>
+      <button type="submit" class="btn-primary">Add crew member</button>
+    </form>
+    <div id="crew-list" class="list-area"></div>
+  </section>
+
+  <section id="budget" class="view">
+    <p class="eyebrow">BUDGET BUILDER</p>
+    <h2>Tie every dollar to a real line item</h2>
+    <form id="budget-form" class="form-card">
+      <label>Department / line item <input type="text" id="budget-item" placeholder="Camera package"></label>
+      <label>Estimated cost ($) <input type="number" id="budget-estimated" placeholder="15000"></label>
+      <label>Status
+        <select id="budget-status">
+          <option>Estimated</option>
+          <option>Locked/Quoted</option>
+          <option>Paid</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary">Add line item</button>
+    </form>
+    <div id="budget-list" class="list-area"></div>
+    <div class="panel total-panel">Total budget <span id="budget-total">$0</span></div>
+  </section>
+
+  <section id="grants" class="view">
+    <p class="eyebrow">GRANTS &amp; INCENTIVES</p>
+    <h2>Public funding as a lifeline, not an afterthought</h2>
+    <form id="grant-form" class="form-card">
+      <label>Program name <input type="text" id="grant-name" placeholder="State film tax credit"></label>
+      <label>Type
+        <select id="grant-type">
+          <option>Tax Incentive</option>
+          <option>Grant</option>
+          <option>Festival Lab</option>
+          <option>Fellowship</option>
+        </select>
+      </label>
+      <label>Deadline <input type="date" id="grant-deadline"></label>
+      <label>Estimated value ($) <input type="number" id="grant-value" placeholder="20000"></label>
+      <label>Status
+        <select id="grant-status">
+          <option>Researching</option>
+          <option>Applying</option>
+          <option>Submitted</option>
+          <option>Awarded</option>
+          <option>Denied</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary">Add program</button>
+    </form>
+    <div id="grant-list" class="list-area"></div>
+  </section>
+
+  <section id="pitch" class="view">
+    <p class="eyebrow">PITCH PORTAL</p>
+    <h2>What investors actually see</h2>
+    <p class="section-sub">A live, shareable snapshot of your project's progress and capability — generated from everything above.</p>
+    <button id="generate-pitch-btn" class="btn-primary">Generate investor snapshot</button>
+    <div id="pitch-output" class="pitch-box"></div>
+  </section>
+
+  <section id="chat" class="view">
+    <p class="eyebrow">TEAM CHAT</p>
+    <h2>Keep the crew aligned</h2>
+    <div id="chat-messages" class="chat-box"></div>
+    <form id="chat-form" class="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Message the team...">
+      <button type="submit" class="btn-primary">Send</button>
+    </form>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="logo">Reel Hub</div>
+    <p>Built for producers who plan before they pitch.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js"></script>
+</body>
+</html>
