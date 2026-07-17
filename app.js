@@ -1,10 +1,10 @@
 const SUPABASE_URL = "https://gqcufcbkadmysqqgbstu.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_gmhw3oMzKIcjE4r024X_Qw_SXas_Ak5";
-let supabase = null;
+let db = null;
 let demoMode = true;
 try {
   if (SUPABASE_URL !== "YOUR_SUPABASE_URL") {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     demoMode = false;
   }
 } catch (e) { demoMode = true; }
@@ -26,8 +26,8 @@ let localGrants = [];
 let localMessages = [];
 
 async function persist(table, row) {
-  if (demoMode || !supabase) return { data: row, error: null };
-  return await supabase.from(table).insert(row).select();
+  if (demoMode || !db) return { data: row, error: null };
+  return await db.from(table).insert(row).select();
 }
 
 document.getElementById("project-form").addEventListener("submit", async e => {
@@ -147,6 +147,6 @@ function updateDashboard() {
 }
 
 document.getElementById("google-login").addEventListener("click", async () => {
-  if (demoMode || !supabase) { alert("Demo mode: add your Supabase URL/anon key in app.js to enable real sign-in."); return; }
-  await supabase.auth.signInWithOAuth({ provider: "google" });
+  if (demoMode || !db) { alert("Demo mode: add your Supabase URL/anon key in app.js to enable real sign-in."); return; }
+  await db.auth.signInWithOAuth({ provider: "google" });
 });
