@@ -146,4 +146,7 @@ function updateDashboard() {
   document.getElementById("investors-in-talks-list").innerHTML = localInvestors.filter(i=>i.stage==="In Talks"||i.stage==="Pitched").map(i=>`<li>${i.name} ($${i.amount.toLocaleString()})</li>`).join("") || '<li class="muted">None yet</li>';
 }
 
-document.getElementById("google-login").addEventListener("click", 
+document.getElementById("google-login").addEventListener("click", async () => {
+  if (demoMode || !supabase) { alert("Demo mode: add your Supabase URL/anon key in app.js to enable real sign-in."); return; }
+  await supabase.auth.signInWithOAuth({ provider: "google" });
+});
