@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Car Series 001 - Demo Project — Call Sheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root, [data-theme="light"]{
+  --color-bg:#f7f6f2; --color-surface:#f9f8f5; --color-surface-2:#fbfbf9;
+  --color-surface-offset:#f3f0ec; --color-surface-offset-2:#edeae5;
+  --color-divider:#dcd9d5; --color-border:#d4d1ca;
+  --color-text:#28251d; --color-text-muted:#7a7974; --color-text-faint:#bab9b4; --color-text-inverse:#f9f8f4;
+  --color-primary:#01696f; --color-primary-hover:#0c4e54; --color-primary-highlight:#cedcd8;
+  --color-success:#437a22; --color-success-highlight:#d4dfcc;
+  --color-warning:#964219; --color-warning-highlight:#ddcfc6;
+  --color-error:#a12c7b; --color-error-highlight:#e0ced7;
+  --radius-sm:.375rem; --radius-md:.5rem; --radius-lg:.75rem; --radius-xl:1rem; --radius-full:9999px;
+  --shadow-sm:0 1px 2px oklch(0.2 0.01 80 / .06);
+  --shadow-md:0 4px 12px oklch(0.2 0.01 80 / .08);
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;--space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-16:4rem;
+  --font-body:'Satoshi','Inter',sans-serif;
+}
+[data-theme="dark"]{
+  --color-bg:#171614; --color-surface:#1c1b19; --color-surface-2:#201f1d;
+  --color-surface-offset:#1d1c1a; --color-surface-offset-2:#22211f;
+  --color-divider:#262523; --color-border:#393836;
+  --color-text:#cdccca; --color-text-muted:#797876; --color-text-faint:#5a5957; --color-text-inverse:#2b2a28;
+  --color-primary:#4f98a3; --color-primary-hover:#227f8b; --color-primary-highlight:#313b3b;
+  --color-success:#6daa45; --color-success-highlight:#3a4435;
+  --color-warning:#bb653b; --color-warning-highlight:#564942;
+  --color-error:#d163a7; --color-error-highlight:#4c3d46;
+  --shadow-sm:0 1px 2px oklch(0 0 0/.2); --shadow-md:0 4px 12px oklch(0 0 0/.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:none;scroll-behavior:smooth;}
+body{min-height:100dvh;font-family:var(--font-body);font-size:1rem;line-height:1.6;color:var(--color-text);background:var(--color-bg);}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;}
+a{color:inherit;text-decoration:none;}
+
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);background:color-mix(in oklab, var(--color-bg) 85%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-divider);}
+.topbar .brand{display:flex;align-items:center;gap:var(--space-2);font-weight:700;}
+.theme-toggle{width:36px;height:36px;border-radius:var(--radius-full);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);}
+.theme-toggle:hover{background:var(--color-surface-offset);}
+.sync-badge{font-size:.7rem;padding:2px 8px;border-radius:var(--radius-full);background:var(--color-surface-offset-2);color:var(--color-text-muted);}
+.sync-badge.live{background:var(--color-success-highlight);color:var(--color-success);}
+
+.container{max-width:960px;margin-inline:auto;padding:var(--space-4);}
+.page-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:var(--space-5);gap:var(--space-3);flex-wrap:wrap;}
+.page-head h1{font-size:1.4rem;font-weight:700;}
+.btn{display:inline-flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-radius:var(--radius-md);font-size:.88rem;font-weight:600;transition:background .18s,transform .18s;}
+.btn-primary{background:var(--color-primary);color:var(--color-text-inverse);}
+.btn-primary:hover{background:var(--color-primary-hover);}
+.btn-ghost{background:var(--color-surface-offset);color:var(--color-text);}
+.btn-ghost:hover{background:var(--color-surface-offset-2);}
+.btn-danger{background:var(--color-error-highlight);color:var(--color-error);}
+.btn-sm{padding:var(--space-1) var(--space-3);font-size:.78rem;}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+.day-list{display:flex;flex-direction:column;gap:var(--space-3);}
+.day-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);box-shadow:var(--shadow-sm);cursor:pointer;}
+.day-card:hover{box-shadow:var(--shadow-md);}
+.day-card .info{display:flex;flex-direction:column;gap:2px;}
+.day-card .day-title{font-weight:700;}
+.day-card .day-meta{font-size:.82rem;color:var(--color-text-muted);}
+.pill{font-size:.7rem;font-weight:600;text-transform:uppercase;padding:2px var(--space-3);border-radius:var(--radius-full);}
+.pill-draft{background:var(--color-surface-offset-2);color:var(--color-text-muted);}
+.pill-sent{background:var(--color-warning-highlight);color:var(--color-warning);}
+.pill-confirmed{background:var(--color-success-highlight);color:var(--color-success);}
+.day-card .delete-x{color:var(--color-text-faint);padding:6px;border-radius:var(--radius-sm);}
+.day-card .delete-x:hover{color:var(--color-error);background:var(--color-error-highlight);}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--space-16) var(--space-8);color:var(--color-text-muted);}
+.empty-state h3{color:var(--color-text);margin-bottom:var(--space-2);}
+.empty-state p{max-width:36ch;margin-bottom:var(--space-6);font-size:.9rem;}
+
+#detailView{display:none;}
+.detail-header{position:sticky;top:57px;z-index:15;background:var(--color-bg);padding:var(--space-4) 0;border-bottom:1px solid var(--color-divider);margin-bottom:var(--space-4);}
+.back-link{display:inline-flex;align-items:center;gap:var(--space-1);font-size:.85rem;color:var(--color-text-muted);margin-bottom:var(--space-3);}
+.back-link:hover{color:var(--color-text);}
+.hero-row{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;}
+.hero-left input{font-size:1.2rem;font-weight:700;border:none;background:transparent;color:var(--color-text);width:100%;}
+.hero-left input:hover, .hero-left input:focus{background:var(--color-surface-offset);outline:none;border-radius:var(--radius-sm);}
+.hero-left .sub-row{display:flex;gap:var(--space-3);margin-top:4px;flex-wrap:wrap;}
+.hero-left .sub-row input{font-size:.85rem;color:var(--color-text-muted);width:auto;font-weight:400;}
+.call-time-ring{width:80px;height:80px;border-radius:50%;border:3px solid var(--color-primary);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.call-time-ring input{width:56px;text-align:center;border:none;background:transparent;font-weight:900;color:var(--color-primary);font-size:1rem;}
+.call-time-ring .label{font-size:.58rem;text-transform:uppercase;color:var(--color-text-muted);}
+
+.acc-item{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-3);}
+.acc-head{width:100%;display:flex;align-items:center;justify-content:space-between;padding:var(--space-4) var(--space-5);font-weight:600;font-size:.93rem;}
+.acc-head:hover{background:var(--color-surface-offset);}
+.acc-head .chev{transition:transform .2s;color:var(--color-text-faint);}
+.acc-item.open .chev{transform:rotate(180deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .3s;}
+.acc-item.open .acc-body{max-height:none;}
+.acc-body-inner{padding:0 var(--space-5) var(--space-5);}
+
+.entry-row{display:grid;grid-template-columns:1fr;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--color-divider);border-radius:var(--radius-md);margin-bottom:var(--space-2);position:relative;background:var(--color-surface-2);}
+@media(min-width:640px){ .entry-row.scene{grid-template-columns:60px 1fr 80px 60px 1fr 30px;}
+  .entry-row.person{grid-template-columns:1fr 1fr 90px 1fr 30px;} }
+.entry-row input, .entry-row textarea, .entry-row select{width:100%;padding:6px 8px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface);color:var(--color-text);font-size:.83rem;}
+.entry-row textarea{resize:vertical;min-height:34px;grid-column:1/-1;}
+.row-delete{color:var(--color-text-faint);align-self:center;justify-self:end;padding:4px;border-radius:var(--radius-sm);}
+.row-delete:hover{color:var(--color-error);background:var(--color-error-highlight);}
+
+.add-btn{display:inline-flex;align-items:center;gap:6px;padding:var(--space-2) var(--space-4);border-radius:var(--radius-md);background:var(--color-primary-highlight);color:var(--color-primary);font-size:.83rem;font-weight:600;margin-top:var(--space-2);}
+.add-btn:hover{background:var(--color-primary);color:var(--color-text-inverse);}
+
+.status-select{font-size:.72rem;padding:2px 6px;border-radius:var(--radius-full);border:1px solid var(--color-border);background:var(--color-surface);}
+
+textarea.notes-field{width:100%;min-height:100px;padding:var(--space-3);border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface-2);color:var(--color-text);font-size:.88rem;resize:vertical;}
+
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:var(--space-3) 0;border-bottom:1px solid var(--color-divider);font-size:.88rem;}
+.toggle-row:last-child{border-bottom:none;}
+.switch{position:relative;width:40px;height:24px;border-radius:var(--radius-full);background:var(--color-surface-offset-2);flex-shrink:0;transition:background .18s;}
+.switch.on{background:var(--color-primary);}
+.switch::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:var(--shadow-sm);}
+.switch.on::after{transform:translateX(16px);}
+
+.action-bar{position:sticky;bottom:0;background:var(--color-bg);border-top:1px solid var(--color-divider);padding:var(--space-4);display:flex;gap:var(--space-3);margin-top:var(--space-6);}
+.action-bar .btn{flex:1;justify-content:center;}
+.field-label{font-size:.72rem;text-transform:uppercase;color:var(--color-text-muted);margin-bottom:4px;display:block;}
+.detail-grid-input{display:grid;grid-template-columns:1fr;gap:var(--space-3);}
+@media(min-width:640px){.detail-grid-input{grid-template-columns:1fr 1fr;}}
+.field-block input{width:100%;padding:8px 10px;border:1px solid var(--color-border);border-radius:var(--radius-sm);background:var(--color-surface-2);color:var(--color-text);font-size:.87rem;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--color-text);color:var(--color-bg);padding:10px 20px;border-radius:var(--radius-md);font-size:.85rem;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7l4-4h8l4 4M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M4 7h16"/><circle cx="12" cy="13" r="3"/></svg>
+    Car Series 001 — Call Sheets
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="sync-badge" id="syncBadge">Local mode</span>
+    <button class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="container">
+  <section id="listView">
+    <div class="page-head">
+      <h1>Call Sheets</h1>
+      <button class="btn btn-primary" id="generateBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        New Shoot Day
+      </button>
+    </div>
+    <div class="day-list" id="dayList"></div>
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <h3>No shoot days yet</h3>
+      <p>Add your first shoot day and start filling in scenes, cast, and crew.</p>
+      <button class="btn btn-primary" onclick="document.getElementById('generateBtn').click()">New Shoot Day</button>
+    </div>
+  </section>
+
+  <section id="detailView">
+    <div class="detail-header">
+      <a class="back-link" id="backLink" href="#">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        All shoot days
+      </a>
+      <div class="hero-row">
+        <div class="hero-left" style="flex:1;min-width:200px;">
+          <input id="f_project" type="text" value="Car Series 001 - Demo Project" oninput="updateField('project_name', this.value)">
+          <div class="sub-row">
+            Day <input id="f_day" type="number" style="width:40px;" oninput="updateField('shoot_day', parseInt(this.value)||1)"> /
+            <input id="f_totaldays" type="number" style="width:40px;" oninput="updateField('total_days', parseInt(this.value)||1)">
+            <input id="f_date" type="date" oninput="updateField('shoot_date', this.value)">
+          </div>
+        </div>
+        <div class="call-time-ring">
+          <span class="label">Call</span>
+          <input id="f_calltime" type="time" oninput="updateField('general_call_time', this.value)">
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-item open" id="acc-status">
+      <button class="acc-head" onclick="toggleAcc('status')">
+        <span>Status</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner">
+        <select id="f_status" class="status-select" onchange="updateField('status', this.value)" style="font-size:.85rem;padding:6px 10px;">
+          <option value="draft">Draft</option>
+          <option value="sent">Sent</option>
+          <option value="confirmed">Confirmed</option>
+        </select>
+      </div></div>
+    </div>
+
+    <div class="acc-item" id="acc-location">
+      <button class="acc-head" onclick="toggleAcc('location')">
+        <span>Location & Logistics</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner">
+        <div class="detail-grid-input">
+          <div class="field-block"><label class="field-label">Address</label><input id="f_location" oninput="updateField('location_name', this.value)"></div>
+          <div class="field-block"><label class="field-label">Map link</label><input id="f_map" oninput="updateField('map_url', this.value)"></div>
+          <div class="field-block"><label class="field-label">Parking notes</label><input id="f_parking" oninput="updateField('parking_notes', this.value)"></div>
+          <div class="field-block"><label class="field-label">Nearest hospital</label><input id="f_hospital" oninput="updateField('nearest_hospital', this.value)"></div>
+          <div class="field-block"><label class="field-label">Weather</label><input id="f_weather" oninput="updateField('weather', this.value)"></div>
+          <div class="field-block"><label class="field-label">Breakfast / Lunch</label><input id="f_meals" oninput="updateField('breakfast', this.value)"></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="acc-item open" id="acc-scenes">
+      <button class="acc-head" onclick="toggleAcc('scenes')">
+        <span>Scenes</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner">
+        <div id="scenesList"></div>
+        <button class="add-btn" onclick="addScene()">+ Add scene</button>
+      </div></div>
+    </div>
+
+    <div class="acc-item" id="acc-cast">
+      <button class="acc-head" onclick="toggleAcc('cast')">
+        <span>Cast</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner">
+        <div id="castList"></div>
+        <button class="add-btn" onclick="addCast()">+ Add cast member</button>
+      </div></div>
+    </div>
+
+    <div class="acc-item" id="acc-crew">
+      <button class="acc-head" onclick="toggleAcc('crew')">
+        <span>Crew</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner">
+        <div id="crewList"></div>
+        <button class="add-btn" onclick="addCrew()">+ Add crew member</button>
+      </div></div>
+    </div>
+
+    <div class="acc-item" id="acc-notes">
+      <button class="acc-head" onclick="toggleAcc('notes')">
+        <span>Production Notes</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner">
+        <textarea class="notes-field" id="f_notes" oninput="updateField('notes', this.value)" placeholder="Safety notes, prop list, sensitive areas, etc."></textarea>
+      </div></div>
+    </div>
+
+    <div class="acc-item" id="acc-visibility">
+      <button class="acc-head" onclick="toggleAcc('visibility')">
+        <span>Section Visibility (on shared/PDF view)</span>
+        <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="acc-body"><div class="acc-body-inner" id="visList"></div></div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-danger" id="deleteBtn">Delete Day</button>
+      <button class="btn btn-ghost" id="pdfBtn">Export PDF</button>
+      <button class="btn btn-primary" id="sendBtn">Send to Crew</button>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast">Saved</div>
+<script>
+const SUPABASE_URL = "https://gqcufcbkadmysqqgbstu.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_gmhw3oMzKIcjE4r024X_Qw_SXas_Ak5";
+let sb = null;
+const LIVE = SUPABASE_URL !== "YOUR_SUPABASE_URL";
+if (LIVE) { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+document.getElementById('syncBadge').textContent = LIVE ? 'Synced to Supabase' : 'Local mode (not saved)';
+if (LIVE) document.getElementById('syncBadge').classList.add('live');
+
+let callSheets = [];
+let currentSheet = null;
+const PROJECT_NAME = 'Car Series 001 - Demo Project';
+
+function uid(){ return 'id-' + Date.now() + '-' + Math.floor(Math.random()*10000); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1400);
+}
+
+async function loadAll(){
+  if (LIVE){
+    const { data, error } = await sb.from('call_sheets').select('*, call_sheet_scenes(*), call_sheet_cast(*), call_sheet_crew(*)').order('shoot_day');
+    if (!error && data) {
+      callSheets = data.map(d => normalizeFromDb(d));
+    }
+  }
+  if (!callSheets.length) seedDefault();
+  renderList();
+}
+
+function normalizeFromDb(d){
+  return {
+    id: d.id, project_name: d.project_name || PROJECT_NAME, shoot_day: d.shoot_day, total_days: d.total_days,
+    shoot_date: d.shoot_date, general_call_time: d.general_call_time, status: d.status,
+    location_name: d.location_name, map_url: d.map_url, parking_notes: d.parking_notes,
+    nearest_hospital: d.nearest_hospital, weather: d.weather, breakfast: d.breakfast, notes: d.notes,
+    visible_sections: d.visible_sections || {parking:true,hospital:true,advanced:false},
+    scenes: (d.call_sheet_scenes||[]).map(s=>({id:s.id, scene:s.scene_number, set:s.set_description, desc:s.location_note||'', dn:s.day_night, pages:s.pages, loc:s.location_note})),
+    cast: (d.call_sheet_cast||[]).map(c=>({id:c.id, name:c.cast_name, character:c.character_name, call_time:c.call_time, notes:c.special_instructions, status:c.status})),
+    crew: (d.call_sheet_crew||[]).map(c=>({id:c.id, position:c.position, name:c.name, phone:c.phone, email:c.email, call_time:c.call_time, status:c.status}))
+  };
+}
+
+function seedDefault(){
+  callSheets = [{
+    id: uid(), project_name: PROJECT_NAME, shoot_day: 1, total_days: 20,
+    shoot_date: '2026-08-03', general_call_time: '07:00', status: 'draft',
+    location_name: '', map_url:'', parking_notes:'', nearest_hospital:'', weather:'', breakfast:'', notes:'',
+    visible_sections:{parking:true,hospital:true,advanced:false},
+    scenes: [], cast: [], crew: []
+  }];
+}
+
+async function saveSheet(cs){
+  if (!LIVE) { showToast('Saved locally'); return; }
+  const payload = {
+    project_name: cs.project_name, shoot_day: cs.shoot_day, total_days: cs.total_days,
+    shoot_date: cs.shoot_date, general_call_time: cs.general_call_time, status: cs.status,
+    location_name: cs.location_name, map_url: cs.map_url, parking_notes: cs.parking_notes,
+    nearest_hospital: cs.nearest_hospital, weather: cs.weather, breakfast: cs.breakfast,
+    notes: cs.notes, visible_sections: cs.visible_sections
+  };
+  if (cs.id.startsWith('id-')) {
+    const { data, error } = await sb.from('call_sheets').insert(payload).select().single();
+    if (!error) { cs.id = data.id; }
+  } else {
+    await sb.from('call_sheets').update(payload).eq('id', cs.id);
+  }
+  showToast('Saved');
+}
+
+async function deleteSheetRemote(id){
+  if (LIVE && !id.startsWith('id-')) await sb.from('call_sheets').delete().eq('id', id);
+}
+
+(function(){
+  const t = document.querySelector('[data-theme-toggle]');
+  const r = document.documentElement;
+  let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark':'light';
+  r.setAttribute('data-theme', d);
+  t.addEventListener('click', ()=>{ d = d==='dark'?'light':'dark'; r.setAttribute('data-theme', d); });
+})();
+
+function renderList(){
+  const list = document.getElementById('dayList');
+  const empty = document.getElementById('emptyState');
+  if (!callSheets.length){ list.style.display='none'; empty.style.display='flex'; return; }
+  list.style.display='flex'; list.style.flexDirection='column'; empty.style.display='none';
+  callSheets.sort((a,b)=>a.shoot_day-b.shoot_day);
+  list.innerHTML = callSheets.map(cs => `
+    <div class="day-card" onclick="openDetail('${cs.id}')">
+      <div class="info">
+        <div class="day-title">${cs.project_name} — Day ${cs.shoot_day}/${cs.total_days}</div>
+        <div class="day-meta">${cs.shoot_date || 'No date set'} · Call ${cs.general_call_time || '--:--'} · ${cs.location_name || 'Location TBD'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="pill pill-${cs.status}">${cs.status}</span>
+        <button class="delete-x" onclick="event.stopPropagation(); quickDelete('${cs.id}')" aria-label="Delete day">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m2 0v14a2 2 0 01-2 2H8a2 2 0 01-2-2V6"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function quickDelete(id){
+  if (!confirm('Delete this shoot day? This cannot be undone.')) return;
+  await deleteSheetRemote(id);
+  callSheets = callSheets.filter(c=>c.id!==id);
+  renderList();
+}
+
+document.getElementById('generateBtn').addEventListener('click', async ()=>{
+  const nextDay = callSheets.length ? Math.max(...callSheets.map(c=>c.shoot_day)) + 1 : 1;
+  const newSheet = {
+    id: uid(), project_name: PROJECT_NAME, shoot_day: nextDay, total_days: 20,
+    shoot_date: '', general_call_time: '07:00', status: 'draft',
+    location_name:'', map_url:'', parking_notes:'', nearest_hospital:'', weather:'', breakfast:'', notes:'',
+    visible_sections:{parking:true,hospital:true,advanced:false}, scenes: [], cast: [], crew: []
+  };
+  callSheets.push(newSheet);
+  if (LIVE) await saveSheet(newSheet);
+  renderList();
+  openDetail(newSheet.id);
+});
+
+function openDetail(id){
+  currentSheet = callSheets.find(c => c.id === id);
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('detailView').style.display = 'block';
+  renderDetail();
+}
+document.getElementById('backLink').addEventListener('click', (e)=>{
+  e.preventDefault();
+  document.getElementById('detailView').style.display='none';
+  document.getElementById('listView').style.display='block';
+  renderList();
+});
+
+function renderDetail(){
+  const cs = currentSheet;
+  document.getElementById('f_project').value = cs.project_name;
+  document.getElementById('f_day').value = cs.shoot_day;
+  document.getElementById('f_totaldays').value = cs.total_days;
+  document.getElementById('f_date').value = cs.shoot_date;
+  document.getElementById('f_calltime').value = cs.general_call_time;
+  document.getElementById('f_status').value = cs.status;
+  document.getElementById('f_location').value = cs.location_name || '';
+  document.getElementById('f_map').value = cs.map_url || '';
+  document.getElementById('f_parking').value = cs.parking_notes || '';
+  document.getElementById('f_hospital').value = cs.nearest_hospital || '';
+  document.getElementById('f_weather').value = cs.weather || '';
+  document.getElementById('f_meals').value = cs.breakfast || '';
+  document.getElementById('f_notes').value = cs.notes || '';
+  renderScenes(); renderCast(); renderCrew(); renderVisibility();
+}
+
+let saveTimer = null;
+function updateField(key, val){
+  currentSheet[key] = val;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ saveSheet(currentSheet); }, 500);
+  if (!LIVE) showToast('Saved locally');
+}
+
+function toggleAcc(key){ document.getElementById('acc-'+key).classList.toggle('open'); }
+  function renderScenes(){
+  const el = document.getElementById('scenesList');
+  if (!currentSheet.scenes.length){ el.innerHTML = `<p style="color:var(--color-text-muted);font-size:.85rem;margin-bottom:8px;">No scenes added yet.</p>`; return; }
+  el.innerHTML = currentSheet.scenes.map((s,i) => `
+    <div class="entry-row scene">
+      <input placeholder="#" value="${s.scene||''}" oninput="editScene(${i},'scene',this.value)">
+      <input placeholder="Set / INT-EXT" value="${s.set||''}" oninput="editScene(${i},'set',this.value)">
+      <select onchange="editScene(${i},'dn',this.value)">
+        <option value="Day" ${s.dn==='Day'?'selected':''}>Day</option>
+        <option value="Night" ${s.dn==='Night'?'selected':''}>Night</option>
+      </select>
+      <input placeholder="Pages" value="${s.pages||''}" oninput="editScene(${i},'pages',this.value)">
+      <input placeholder="Location" value="${s.loc||''}" oninput="editScene(${i},'loc',this.value)">
+      <button class="row-delete" onclick="removeScene(${i})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <textarea placeholder="Scene description" oninput="editScene(${i},'desc',this.value)">${s.desc||''}</textarea>
+    </div>
+  `).join('');
+}
+function addScene(){
+  currentSheet.scenes.push({scene:'', set:'', desc:'', dn:'Day', pages:'', loc:''});
+  renderScenes(); saveSheet(currentSheet);
+}
+function editScene(i, key, val){ currentSheet.scenes[i][key] = val; clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveSheet(currentSheet),600); }
+function removeScene(i){ currentSheet.scenes.splice(i,1); renderScenes(); saveSheet(currentSheet); }
+
+function renderCast(){
+  const el = document.getElementById('castList');
+  if (!currentSheet.cast.length){ el.innerHTML = `<p style="color:var(--color-text-muted);font-size:.85rem;margin-bottom:8px;">No cast added yet.</p>`; return; }
+  el.innerHTML = currentSheet.cast.map((c,i) => `
+    <div class="entry-row person">
+      <input placeholder="Name" value="${c.name||''}" oninput="editCast(${i},'name',this.value)">
+      <input placeholder="Character" value="${c.character||''}" oninput="editCast(${i},'character',this.value)">
+      <input placeholder="Call" type="time" value="${c.call_time||''}" oninput="editCast(${i},'call_time',this.value)">
+      <input placeholder="Notes" value="${c.notes||''}" oninput="editCast(${i},'notes',this.value)">
+      <button class="row-delete" onclick="removeCast(${i})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+function addCast(){ currentSheet.cast.push({name:'',character:'',call_time:'',notes:'',status:'not_sent'}); renderCast(); saveSheet(currentSheet); }
+function editCast(i,key,val){ currentSheet.cast[i][key]=val; clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveSheet(currentSheet),600); }
+function removeCast(i){ currentSheet.cast.splice(i,1); renderCast(); saveSheet(currentSheet); }
+
+function renderCrew(){
+  const el = document.getElementById('crewList');
+  if (!currentSheet.crew.length){ el.innerHTML = `<p style="color:var(--color-text-muted);font-size:.85rem;margin-bottom:8px;">No crew added yet.</p>`; return; }
+  el.innerHTML = currentSheet.crew.map((c,i) => `
+    <div class="entry-row person">
+      <input placeholder="Position" value="${c.position||''}" oninput="editCrew(${i},'position',this.value)">
+      <input placeholder="Name" value="${c.name||''}" oninput="editCrew(${i},'name',this.value)">
+      <input placeholder="Call" type="time" value="${c.call_time||''}" oninput="editCrew(${i},'call_time',this.value)">
+      <input placeholder="Phone" value="${c.phone||''}" oninput="editCrew(${i},'phone',this.value)">
+      <button class="row-delete" onclick="removeCrew(${i})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+function addCrew(){ currentSheet.crew.push({position:'',name:'',phone:'',email:'',call_time:'',status:'not_sent'}); renderCrew(); saveSheet(currentSheet); }
+function editCrew(i,key,val){ currentSheet.crew[i][key]=val; clearTimeout(saveTimer); saveTimer=setTimeout(()=>saveSheet(currentSheet),600); }
+function removeCrew(i){ currentSheet.crew.splice(i,1); renderCrew(); saveSheet(currentSheet); }
+
+function renderVisibility(){
+  const vs = currentSheet.visible_sections;
+  document.getElementById('visList').innerHTML = `
+    <div class="toggle-row"><span>Show parking notes</span><button class="switch ${vs.parking?'on':''}" onclick="toggleVis('parking', this)"></button></div>
+    <div class="toggle-row"><span>Show nearest hospital</span><button class="switch ${vs.hospital?'on':''}" onclick="toggleVis('hospital', this)"></button></div>
+    <div class="toggle-row"><span>Show advanced schedule</span><button class="switch ${vs.advanced?'on':''}" onclick="toggleVis('advanced', this)"></button></div>
+  `;
+}
+function toggleVis(key, el){ currentSheet.visible_sections[key] = !currentSheet.visible_sections[key]; el.classList.toggle('on'); saveSheet(currentSheet); }
+
+document.getElementById('deleteBtn').addEventListener('click', async ()=>{
+  if (!confirm('Delete this entire shoot day? This cannot be undone.')) return;
+  await deleteSheetRemote(currentSheet.id);
+  callSheets = callSheets.filter(c=>c.id!==currentSheet.id);
+  document.getElementById('detailView').style.display='none';
+  document.getElementById('listView').style.display='block';
+  renderList();
+});
+
+document.getElementById('sendBtn').addEventListener('click', ()=>{
+  currentSheet.status = 'sent';
+  currentSheet.crew.forEach(c => { if(c.status==='not_sent') c.status='viewed'; });
+  saveSheet(currentSheet);
+  renderDetail();
+  showToast('Marked as sent');
+});
+
+document.getElementById('pdfBtn').addEventListener('click', ()=>{
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const cs = currentSheet;
+  let y = 15;
+  doc.setFontSize(16); doc.text(`${cs.project_name} — Day ${cs.shoot_day}/${cs.total_days}`, 14, y); y+=8;
+  doc.setFontSize(10); doc.text(`Call Time: ${cs.general_call_time}   Date: ${cs.shoot_date}`, 14, y); y+=6;
+  doc.text(`Location: ${cs.location_name || '-'}`, 14, y); y+=10;
+  doc.setFontSize(12); doc.text('Scenes', 14, y); y+=6; doc.setFontSize(9);
+  cs.scenes.forEach(s => { doc.text(`${s.scene}  ${s.set}  (${s.dn}, ${s.pages})`, 14, y); y+=5; if (y>270){doc.addPage();y=15;} });
+  y+=5; doc.setFontSize(12); doc.text('Cast', 14, y); y+=6; doc.setFontSize(9);
+  cs.cast.forEach(c => { doc.text(`${c.character}: ${c.name} — Call ${c.call_time}`, 14, y); y+=5; if (y>270){doc.addPage();y=15;} });
+  y+=5; doc.setFontSize(12); doc.text('Crew', 14, y); y+=6; doc.setFontSize(9);
+  cs.crew.forEach(c => { doc.text(`${c.position}: ${c.name} — Call ${c.call_time}`, 14, y); y+=5; if (y>270){doc.addPage();y=15;} });
+  doc.save(`${cs.project_name}_Day${cs.shoot_day}_CallSheet.pdf`);
+});
+
+loadAll();
+</script>
+</body>
+</html>
