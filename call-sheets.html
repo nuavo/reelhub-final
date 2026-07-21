@@ -542,15 +542,42 @@ document.getElementById('pdfBtn').addEventListener('click', ()=>{
   const doc = new jsPDF();
   const cs = currentSheet;
   let y = 15;
+  const check = () => { if (y>275){doc.addPage(); y=15;} };
+
   doc.setFontSize(16); doc.text(`${cs.project_name} — Day ${cs.shoot_day}/${cs.total_days}`, 14, y); y+=8;
-  doc.setFontSize(10); doc.text(`Call Time: ${cs.general_call_time}   Date: ${cs.shoot_date}`, 14, y); y+=6;
-  doc.text(`Location: ${cs.location_name || '-'}`, 14, y); y+=10;
+  doc.setFontSize(10); doc.text(`Call Time: ${cs.general_call_time || '-'}   Date: ${cs.shoot_date || '-'}`, 14, y); y+=6;
+  doc.text(`Status: ${cs.status}`, 14, y); y+=10;
+
+  doc.setFontSize(12); doc.text('Location & Logistics', 14, y); y+=6; doc.setFontSize(9);
+  doc.text(`Address: ${cs.location_name || '-'}`, 14, y); y+=5;
+  doc.text(`Map: ${cs.map_url || '-'}`, 14, y); y+=5;
+  doc.text(`Parking: ${cs.parking_notes || '-'}`, 14, y); y+=5;
+  doc.text(`Nearest Hospital: ${cs.nearest_hospital || '-'}`, 14, y); y+=5;
+  doc.text(`Weather: ${cs.weather || '-'}`, 14, y); y+=5;
+  doc.text(`Breakfast/Lunch: ${cs.breakfast || '-'}`, 14, y); y+=10; check();
+
   doc.setFontSize(12); doc.text('Scenes', 14, y); y+=6; doc.setFontSize(9);
-  cs.scenes.forEach(s => { doc.text(`${s.scene}  ${s.set}  (${s.dn}, ${s.pages})`, 14, y); y+=5; if (y>270){doc.addPage();y=15;} });
-  y+=5; doc.setFontSize(12); doc.text('Cast', 14, y); y+=6; doc.setFontSize(9);
-  cs.cast.forEach(c => { doc.text(`${c.character}: ${c.name} — Call ${c.call_time}`, 14, y); y+=5; if (y>270){doc.addPage();y=15;} });
-  y+=5; doc.setFontSize(12); doc.text('Crew', 14, y); y+=6; doc.setFontSize(9);
-  cs.crew.forEach(c => { doc.text(`${c.position}: ${c.name} — Call ${c.call_time}`, 14, y); y+=5; if (y>270){doc.addPage();y=15;} });
+  if (!cs.scenes.length) { doc.text('No scenes added.', 14, y); y+=5; }
+  cs.scenes.forEach(s => {
+    doc.text(`${s.scene}  ${s.set}  (${s.dn}, ${s.pages})  — ${s.loc||''}`, 14, y); y+=5; check();
+    if (s.desc) { doc.text(`   ${s.desc}`, 14, y); y+=5; check(); }
+  });
+  y+=5; check();
+
+  doc.setFontSize(12); doc.text('Cast', 14, y); y+=6; doc.setFontSize(9);
+  if (!cs.cast.length) { doc.text('No cast added.', 14, y); y+=5; }
+  cs.cast.forEach(c => { doc.text(`${c.character||'-'}: ${c.name||'-'} — Call ${c.call_time||'-'}  ${c.notes||''}`, 14, y); y+=5; check(); });
+  y+=5; check();
+
+  doc.setFontSize(12); doc.text('Crew', 14, y); y+=6; doc.setFontSize(9);
+  if (!cs.crew.length) { doc.text('No crew added.', 14, y); y+=5; }
+  cs.crew.forEach(c => { doc.text(`${c.position||'-'}: ${c.name||'-'} — Call ${c.call_time||'-'}  ${c.phone||''}`, 14, y); y+=5; check(); });
+  y+=5; check();
+
+  doc.setFontSize(12); doc.text('Production Notes', 14, y); y+=6; doc.setFontSize(9);
+  const notesLines = doc.splitTextToSize(cs.notes || 'None', 180);
+  doc.text(notesLines, 14, y); y += notesLines.length*5;
+
   doc.save(`${cs.project_name}_Day${cs.shoot_day}_CallSheet.pdf`);
 });
 
